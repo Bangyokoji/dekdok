@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smekkadoc Gallery | Visual Production</title>
+    
+    <!-- FONTS & ICONS -->
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg: #050505;
+            --accent: #D4AF37;
+            --white: #ffffff;
+            --border: rgba(255, 255, 255, 0.08);
+            --ease: cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { scroll-behavior: smooth; }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--white);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            height: 100vh; /* Locked during intro */
+        }
+
+        /* Cinematic Background Grain */
+        body::after {
+            content: ""; position: fixed; inset: 0;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/76/1k_Grain.png');
+            opacity: 0.04; pointer-events: none; z-index: 9999;
+        }
+
+        /* --- 1. INTRO SYSTEM (ULTRA PRECISION) --- */
+        #intro-overlay {
+            position: fixed; inset: 0; background: #000; z-index: 10000;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 1.2s var(--ease);
+        }
+
+        #brand-portal {
+            position: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            z-index: 10001;
+            /* Awal: Tengah Layar */
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(1.2);
+            width: max-content;
+            white-space: nowrap;
+            transition: all 1.8s var(--ease);
+            pointer-events: none;
+        }
+
+        .portal-logo {
+            width: 90px; height: 90px; flex-shrink: 0;
+            background: url('https://drive.google.com/thumbnail?id=1aMILwY8Kv4fE5BWrsyTJa_OVgx_ww97o&sz=500') center/contain no-repeat;
+            transition: all 1.8s var(--ease);
+        }
+
+        .portal-text {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            font-weight: 800;
+            letter-spacing: 5px;
+            color: var(--white);
+            transition: all 1.8s var(--ease);
+        }
+
+        /* Nav Landing State */
+        #brand-portal.landed {
+            top: 40px;
+            left: 5%;
+            transform: translate(0, -50%) scale(1);
+            gap: 15px;
+        }
+        #brand-portal.landed .portal-logo { width: 35px; height: 35px; }
+        #brand-portal.landed .portal-text { font-size: 1rem; letter-spacing: 1.5px; }
+
+        /* --- 2. MUSIC PLAYER --- */
+        #music-btn {
+            position: fixed; left: 25px; bottom: 25px; z-index: 10002;
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px);
+            padding: 12px 22px; border-radius: 50px; border: 1px solid var(--border);
+            display: flex; align-items: center; gap: 12px; cursor: pointer;
+            opacity: 0; transform: translateY(20px); transition: 0.8s;
+        }
+        .eq-wrap { display: flex; align-items: flex-end; gap: 3px; height: 14px; }
+        .eq-bar { width: 3px; height: 4px; background: var(--accent); border-radius: 2px; }
+        .is-playing .eq-bar:nth-child(1) { animation: eq 0.6s infinite alternate; }
+        .is-playing .eq-bar:nth-child(2) { animation: eq 0.9s infinite alternate; }
+        .is-playing .eq-bar:nth-child(3) { animation: eq 0.7s infinite alternate; }
+        @keyframes eq { from { height: 4px; } to { height: 14px; } }
+
+        /* --- 3. UI TOOLS --- */
+        nav {
+            position: fixed; top: 0; width: 100%; height: 80px;
+            background: rgba(3,3,3,0.7); backdrop-filter: blur(25px);
+            z-index: 999; border-bottom: 1px solid var(--border);
+            opacity: 0; transition: 1s;
+        }
+
+        #side-tools {
+            position: fixed; right: 20px; top: 50%; transform: translateY(-50%);
+            display: flex; flex-direction: column; gap: 15px; z-index: 998;
+            opacity: 0; transition: 1s;
+        }
+        .tool-link {
+            width: 42px; height: 42px; background: rgba(255,255,255,0.03);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: #444; border: 1px solid var(--border); text-decoration: none; transition: 0.3s;
+        }
+        .tool-link:hover { color: var(--accent); border-color: var(--accent); transform: scale(1.1); }
+
+        /* --- 4. SECTIONS --- */
+        main { opacity: 0; transition: 1.5s var(--ease); padding-top: 50px; }
+        section { padding: 120px 8%; border-bottom: 1px solid var(--border); }
+        .section-title { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 8vw, 3.5rem); margin-bottom: 50px; text-transform: uppercase; }
+
+        .hero { height: 90vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(3rem, 15vw, 10rem); line-height: 0.85; }
+
+        /* ACHIEVEMENT */
+        .achieve-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .achieve-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 40px; border-left: 4px solid var(--accent); }
+        .achieve-card h3 { font-family: 'Syne', sans-serif; font-size: 1.4rem; color: var(--accent); margin-bottom: 10px; }
+
+        /* --- 5. TEAM & GALLERY INTERACTIVE --- */
+        .team-grid { display: grid; grid-template-columns: 1fr; gap: 140px; margin-top: 80px; }
+        .member-wrapper { display: flex; align-items: center; justify-content: center; gap: 60px; flex-wrap: wrap; width: 100%; transition: 0.8s; }
+        
+        .scene { position: relative; width: 180px; height: 320px; display: flex; flex-direction: column; align-items: center; perspective: 1200px; }
+        .backlight { position: absolute; top: 60px; width: 140px; height: 210px; background: var(--accent); filter: blur(45px); opacity: 0; z-index: 1; transition: 0.8s; }
+        .rope { width: 3px; height: 60px; background: #222; transform-origin: top center; z-index: 2; position: relative; }
+        
+        .id-card {
+            width: 175px; height: 265px; background: #0c0c0c; border: 1.5px solid var(--border); border-radius: 18px;
+            position: absolute; top: 58px; transform-origin: top center; box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            overflow: hidden; cursor: pointer; z-index: 3;
+        }
+
+        .photo { 
+            width: 100%; height: 165px; background-size: cover; background-position: center; 
+            filter: grayscale(1) brightness(1.1); border-bottom: 2.5px solid var(--border); 
+            transition: 0.8s var(--ease);
+            background-image: url('https://drive.google.com/thumbnail?id=15HT1M6jS8K3NjtTWBBw84Gi1a8o4K3VW&sz=600');
+        }
+
+        .card-meta { padding: 15px 10px; text-align: center; background: #0a0a0a; }
+        .card-meta h4 { font-family: 'Syne', sans-serif; font-size: 0.85rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Gallery Appearance */
+        .gallery-side { opacity: 0; transform: translateX(-30px); transition: 0.8s var(--ease); pointer-events: none; max-width: 400px; }
+        .gallery-label { font-family: 'Syne', sans-serif; font-size: 0.9rem; color: var(--accent); letter-spacing: 4px; margin-bottom: 15px; display: block; border-left: 3px solid var(--accent); padding-left: 15px; }
+
+        .info-tags { margin-bottom: 20px; font-size: 0.75rem; color: #777; text-transform: uppercase; letter-spacing: 1px; line-height: 1.6; }
+        .info-tags b { color: #ccc; }
+
+        .collage { display: grid; grid-template-columns: repeat(2, 110px); gap: 12px; }
+        .collage-img { 
+            width: 110px; height: 110px; border-radius: 10px; background-size: cover; border: 1px solid var(--border); 
+            background-image: url('https://drive.google.com/thumbnail?id=1_iSM_3--idxQb0RxsxlArjG9Fj3mIQeu&sz=400');
+            opacity: 0; transform: scale(0.7); transition: 0.6s var(--ease); 
+        }
+
+        /* ACTIVE LOGIC (CLICK CARD) */
+        .member-wrapper.active .id-card { border-color: var(--accent); }
+        .member-wrapper.active .photo { filter: grayscale(0) brightness(1); border-bottom-color: var(--accent); }
+        .member-wrapper.active .backlight { opacity: 0.4; }
+        .member-wrapper.active .gallery-side { opacity: 1; transform: translateX(0); pointer-events: auto; }
+        .member-wrapper.active .collage-img { opacity: 1; transform: scale(1); }
+
+        /* --- 6. START PROJECT (REDESIGN) --- */
+        .cta-section { padding: 150px 8%; text-align: center; background: radial-gradient(circle at bottom, #111, #050505); }
+        .cta-section h2 { font-family: 'Syne', sans-serif; font-size: clamp(2.5rem, 10vw, 6rem); line-height: 0.9; margin-bottom: 25px; }
+        .cta-section p { color: #666; max-width: 600px; margin: 0 auto 40px; font-size: 1.1rem; }
+        
+        .premium-ig-btn {
+            padding: 22px 50px; background: var(--white); color: #000; text-decoration: none; 
+            font-weight: 800; border-radius: 4px; display: inline-flex; align-items: center; gap: 15px;
+            transition: 0.4s; text-transform: uppercase; letter-spacing: 3px; font-size: 0.9rem;
+        }
+        .premium-ig-btn:hover { background: var(--accent); transform: translateY(-10px); box-shadow: 0 20px 40px rgba(212, 175, 55, 0.2); }
+
+        @media (max-width: 768px) {
+            .member-wrapper { flex-direction: column; text-align: center; }
+            .gallery-side { transform: translateY(20px); }
+            #brand-portal.landed { top: 40px; left: 5%; transform: translate(0, -50%) scale(0.9); }
+            .portal-text { font-size: 1.3rem; }
+            .gallery-label { border-left: 0; border-bottom: 3px solid var(--accent); padding-left: 0; padding-bottom: 10px; display: inline-block; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. INTRO SYSTEM -->
+    <div id="intro-overlay"></div>
+    <div id="brand-portal">
+        <div class="portal-logo"></div>
+        <div class="portal-text">SMEKKA DOCUMENTARY</div>
+    </div>
+
+    <!-- 2. MUSIC PLAYER -->
+    <div id="music-btn" onclick="toggleMusic()">
+        <div class="eq-wrap" id="eq">
+            <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+        </div>
+        <span id="m-label" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">PLAY MUSIC</span>
+        <audio id="bg-snd" loop preload="auto">
+            <source src="https://docs.google.com/uc?export=download&id=1BmrfNvWiiC4IrfAg1kzoAYihPa-8LHPT" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <nav id="navbar"></nav>
+
+    <div id="side-tools">
+        <a href="#home" class="tool-link"><i class="fas fa-home"></i></a>
+        <a href="#about" class="tool-link"><i class="fas fa-book-open"></i></a>
+        <a href="#awards" class="tool-link"><i class="fas fa-medal"></i></a>
+        <a href="#team" class="tool-link"><i class="fas fa-users"></i></a>
+        <a href="https://www.instagram.com/smekkadoc" target="_blank" class="tool-link" style="background:rgba(255,255,255,0.1);"><i class="fab fa-instagram"></i></a>
+    </div>
+
+    <main id="main-content">
+        <!-- Hero Section -->
+        <header class="hero" id="home">
+            <p style="color:var(--accent); letter-spacing: 10px; font-weight: 700; margin-bottom: 20px; font-size: 0.85rem;">ESTABLISHED MMXX</p>
+            <h1>SMEKKADOC<br>GALLERY.</h1>
+        </header>
+
+        <!-- Our Story -->
+        <section id="about">
+            <h2 class="section-title">OUR STORY.</h2>
+            <div style="max-width: 800px;">
+                <p style="font-size: 1.2rem; line-height: 2; color: #777;">
+                    SMEKKA DOCUMENTARY lahir dari gairah untuk mengabadikan sejarah melalui lensa sinematik. Sejak tahun 2020, kami telah bertransformasi menjadi kolektif kreatif yang berdedikasi untuk menangkap setiap detail emosi yang seringkali luput dari pandangan mata.
+                </p>
+            </div>
+        </section>
+
+        <!-- Achievements -->
+        <section id="awards">
+            <h2 class="section-title">ACHIEVEMENTS.</h2>
+            <div class="achieve-grid">
+                <div class="achieve-card">
+                    <h3>JUARA 2</h3>
+                    <p style="color:#666; letter-spacing: 1px; font-size: 0.9rem;">LOMBA FOTOGRAFI FLS2N TINGKAT KABUPATEN</p>
+                </div>
+                <div class="achieve-card">
+                    <h3>JUARA 3</h3>
+                    <p style="color:#666; letter-spacing: 1px; font-size: 0.9rem;">LOMBA SHORT FILM FLS2N TINGKAT KABUPATEN</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team -->
+        <section id="team">
+            <h2 class="section-title" style="text-align: center;">THE TEAM.</h2>
+            <p style="text-align: center; color: #444; font-size: 0.8rem; margin-bottom: 80px; letter-spacing: 2px;">CLICK CARD TO EXPLORE WORKS</p>
+            <div class="team-grid" id="team-render"></div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="cta-section" id="contact">
+            <h2>START YOUR<br>VISION.</h2>
+            <p>Punya proyek dokumentasi atau ide kreatif yang ingin diwujudkan? Mari berkolaborasi menciptakan visual yang abadi bersama tim kami.</p>
+            <a href="https://www.instagram.com/smekkadoc" target="_blank" class="premium-ig-btn">
+                <i class="fab fa-instagram" style="font-size: 1.5rem;"></i> Follow @smekkadoc
+            </a>
+            <div style="margin-top: 100px; font-size: 0.65rem; opacity: 0.2; letter-spacing: 5px;">SMEKKA DOCUMENTARY &bull; SMK KARYA &bull; 2024</div>
+        </section>
+    </main>
+
+    <script>
+        // --- 1. MUSIC ENGINE ---
+        const audio = document.getElementById('bg-snd');
+        const eq = document.getElementById('eq');
+        const mLabel = document.getElementById('m-label');
+        const mBtn = document.getElementById('music-btn');
+
+        function toggleMusic() {
+            if (audio.paused) {
+                audio.play().then(() => {
+                    mBtn.classList.add('is-playing');
+                    mLabel.innerText = "SOUND ON";
+                    mLabel.style.color = "var(--accent)";
+                }).catch(e => alert("Izin browser diperlukan. Silakan klik sekali lagi."));
+            } else {
+                audio.pause();
+                mBtn.classList.remove('is-playing');
+                mLabel.innerText = "SOUND OFF";
+                mLabel.style.color = "#fff";
+            }
+        }
+
+        // --- 2. INTRO CONTROLLER ---
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('brand-portal').classList.add('landed');
+                document.getElementById('intro-overlay').style.opacity = "0";
+                document.getElementById('main-content').style.opacity = "1";
+                document.getElementById('navbar').style.opacity = "1";
+                document.getElementById('music-btn').style.opacity = "1";
+                document.getElementById('music-btn').style.transform = "translateY(0)";
+                document.getElementById('side-tools').style.opacity = "1";
+                document.body.style.overflow = "auto";
+                setTimeout(() => document.getElementById('intro-overlay').style.display = "none", 1500);
+            }, 2000);
+        });
+
+        // --- 3. TEAM DATA RENDER ---
+        const teamData = [
+            { role: "Creative Lead", batch: "1", class: "XII", major: "Multimedia" },
+            { role: "Director", batch: "1", class: "XII", major: "Multimedia" },
+            { role: "Editor", batch: "1", class: "XII", major: "Multimedia" },
+            { role: "Cameraman", batch: "1", class: "XII", major: "Multimedia" },
+            { role: "Photographer", batch: "1", class: "XII", major: "Multimedia" },
+            { role: "Colorist", batch: "1", class: "XII", major: "Multimedia" },
+            { role: "Lighting", batch: "1", class: "XII", major: "Multimedia" },
+            { role: "Producer", batch: "1", class: "XII", major: "Multimedia" },
+            { role: "Art Director", batch: "1", class: "XII", major: "Multimedia" }
+        ];
+
+        const root = document.getElementById('team-render');
+        teamData.forEach((m, i) => {
+            root.innerHTML += `
+                <div class="member-wrapper" id="mem-${i}">
+                    <div class="scene">
+                        <div class="backlight"></div>
+                        <div class="rope"></div>
+                        <div class="id-card" onclick="toggleActive(${i})">
+                            <div class="photo"></div>
+                            <div class="card-meta">
+                                <h4>TRIO SETIAWAN</h4>
+                                <p style="font-size:0.55rem; color:#666; margin-top:5px; font-weight:700;">${m.role.toUpperCase()}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="gallery-side">
+                        <span class="gallery-label">MY BEST WORK</span>
+                        <div class="info-tags">
+                            Angkatan: <b>${m.batch}</b> &bull; Kelas: <b>${m.class}</b> <br>
+                            Jurusan: <b>${m.major}</b>
+                        </div>
+                        <div class="collage">
+                            <div class="collage-img"></div><div class="collage-img"></div>
+                            <div class="collage-img"></div><div class="collage-img"></div>
+                        </div>
+                        <a href="https://www.instagram.com/setiagraphyy" target="_blank" style="color:var(--accent); font-size:1.3rem; margin-top:20px; display:inline-block;"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            `;
+        });
+
+        // --- 4. PHYSICS ENGINE ---
+        const cards = document.querySelectorAll('.id-card');
+        const physics = Array.from(cards).map(() => ({ x:0, y:0, vX:0, vY:0, tX:0, tY:0 }));
+
+        function toggleActive(id) {
+            document.getElementById(`mem-${id}`).classList.toggle('active');
+            physics[id].vX = (Math.random() - 0.5) * 80;
+        }
+
+        function engine() {
+            cards.forEach((el, i) => {
+                const p = physics[i];
+                const rope = el.previousElementSibling;
+                const glow = el.previousElementSibling.previousElementSibling;
+                
+                const spring = 0.12; const friction = 0.85;
+                const time = Date.now() * 0.0015;
+
+                p.tX = Math.sin(time + i) * 3.5;
+                p.tY = Math.cos(time * 0.8 + i) * 2.5;
+
+                p.vX += (p.tX - p.x) * spring;
+                p.vY += (p.tY - p.y) * spring;
+                p.vX *= friction; p.vY *= friction;
+                p.x += p.vX; p.y += p.vY;
+
+                el.style.transform = `rotateX(${p.x}deg) rotateY(${p.y}deg)`;
+                rope.style.transform = `rotate(${p.y * 0.55}deg)`;
+                glow.style.transform = `rotateX(${p.x}deg) rotateY(${p.y}deg) translateZ(-30px)`;
+            });
+            requestAnimationFrame(engine);
+        }
+        engine();
+
+        window.onscroll = () => {
+            document.querySelectorAll('section').forEach(sec => {
+                if (window.scrollY >= sec.offsetTop - 750) sec.classList.add('reveal');
+            });
+        }
+    </script>
+</body>
+</html>
